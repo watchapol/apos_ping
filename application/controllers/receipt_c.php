@@ -7,17 +7,21 @@ class receipt_c extends CI_Controller {
 	{
 		parent::__construct();				
 			$this->load->library('adodb_loader');
-			
+		
 			$this->load->model('item_m'); 
 			$this->load->model('customer_m');
 			$this->load->model('bank_m');
-			
+			$this->load->model('recid_m');
+			$this->load->model('store_m');
+		
+			date_default_timezone_set("Asia/Bangkok");		
 			$this->load->library('Mobile_Detect'); // ใช้สำหรับตรวจสอบ ว่าเป็นมือถือหรือคอมพิวเตอร์  // application/libraries/Mobile_Detect.php
 			$this->Mobile_Detect = new Mobile_Detect();
 	} 	
 	public function pubReceipt_submit(){ //  สำหรับ submit หน้า Receipt  เก็บข้อมูลเข้าระบบ	
-		$recid= $this->db->select('recid')->from('receipt')->order_by('rec_date','DESC')->limit(1)->get()->row_array(); 		
-		$recid= $recid['recid']+1;//get recid ล่าสุดออกมา								
+
+		$recid= $this->recid_m->pubGetReceipt_id();		
+		$recid= $recid['recid']+1;//get recid ล่าสุดออกมา									
 		$count_index =  count($_POST['item_id']);
 		$totalprice =0;	
 		$this->db->trans_start();		
@@ -26,7 +30,7 @@ class receipt_c extends CI_Controller {
 			$rec['recid']=$recid;
 			$rec['itemid']=trim($_POST['item_id'][$i]);
 			$rec['total']=$_POST['count'][$i]*$_POST['qty'][$i];
-			$rec['supid']=trim($_POST['supid']);
+			$rec['supid']=$_POST['supid'][$i];
 			$rec['price']=floatval($_POST['price'][$i]);
 			
 			$rec['col']=$i+1;
@@ -34,20 +38,22 @@ class receipt_c extends CI_Controller {
 			$totalprice =$totalprice+$rec['totalprice'];
 			$error = $this->validateReceipt_detail($rec['recid'],$rec['itemid'],$rec['total'],$rec['supid'],$rec['price'],$rec['col'],$rec['totalprice']);// ตรวจสอบก่อน insert
 			if (is_int($error)){
-				$check_receipt_detail =  $this->db->insert('receipt_detail',$rec); //  insert item เข้า database	 receipt_detail						
+				$check_receipt_detail =  $this->recid_m->pubinsertReceiptdetail($rec); //  insert item เข้า database	 receipt_detail						
+				
 			}			
 			if($check_receipt_detail){  // หาก inser ผ่านให้หักลบ stock สินค้าได้
-				$stock = $this->item_m->pubGetStock($_POST['item_id'][$i]); //ดึงข้อมูล ตัวเลขstock เพิ่อมาหักลบ
+				$stock = $this->store_m->pubGetStock($_POST['item_id'][$i]); //ดึงข้อมูล ตัวเลขstock เพิ่อมาหักลบ
 				$stock['total'] =$stock['total']-$rec['total'];
-				$this->db->where('itemid',$_POST['item_id'][$i]);
-				$this->db->update('store',$stock); //  update stock เข้า database	 store		
+				$stock['chang_date'] =date('Y-m-d H:i:s');
+				$this->store_m->pubUpdateStock($_POST['item_id'][$i],$stock);
+				
 			}	
 			else{
 				echo 'Error : ไม่สามารถ ลงทะเบียนสั่งซื้อสินค้าได้';			
 			} 
 		}		
 		$data['recid']=trim($recid);
-		$data['rec_date']=date('Y-m-d H:M:S');
+		$data['rec_date']=date('Y-m-d H:i:s');
 		$data['bankaccount']=trim($_POST['parmant']);
 		$data['cusid']=trim($_POST['cusid_input']);	
 		$data['orderid']=trim($_POST['orderid']);
@@ -63,7 +69,7 @@ class receipt_c extends CI_Controller {
 		$data['commentr']=trim($_POST['commentr']);
 		$error = $this->validateReceipt($data['recid'],$data['bankaccount'],$data['cusid'],$data['orderid'],$data['rec_date'],$data['pay_date'],$data['totalprice'],$data['paytype']);								
 		if (is_int($error)){// ตรวจสอบก่อน insert
-			$this->db->insert('receipt',$data); //  insert เข้า database	 receipt			
+			$this->recid_m->pubinsertReceipt($data);			
 		}
 		$this->db->trans_complete();	
 		if ($this->db->trans_status() === FALSE) 
@@ -97,10 +103,8 @@ class receipt_c extends CI_Controller {
 				
 				if(!is_int($totalprice)&&!is_float($totalprice)){$erroract = 1;$error['totalprice_float'] =  "totalprice is not float ";}							
 				if(strlen($totalprice)==0){$erroract = 1;$error['totalprice_notnull'] =  "totalprice Require";}								
-				if($erroract==1){			
-				
-					pre($error);
-					
+				if($erroract==1){							
+					pre($error);					
 				}else{
 
 					return 0;	
@@ -175,7 +179,7 @@ class receipt_c extends CI_Controller {
 		echo json_encode($return);
 	}
 	public function pubAjaxitemStock(){	//function สำหรับการตรวจสอบ จำนวนสินค้า
-		$a_stock = $this->item_m->pubGetStock($_POST['itemid']); 
+		$a_stock = $this->store_m->pubGetStock($_POST['itemid']); 
 		echo $a_stock['total']-$_POST['qty'];
 	}
 	public function pubAjaxitemAdd(){ //funciton สำหรับการ  เพิ่มสินค้า
@@ -196,6 +200,7 @@ class receipt_c extends CI_Controller {
 				$a_count = $this->item_m->pubGetCount($_POST['itemid']); // get count
 			//-----------ดึง database count 							
 				$data['id'] =$_POST['itemid'];
+				$data['supid'] =$a_item['supid'];
 				$data['name'] =$a_item['name'];
 				$data['price'] =$int_price;
 				$data['count'] =$a_count;

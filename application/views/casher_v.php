@@ -1,14 +1,14 @@
 <script type='text/javascript'>
 $( document ).ready(function(){
-	if('<?php echo $check_mobile;?>'==0){ // หากมีค่าเป็น 0 แปลว่าเป็น PC
-				$('#container_2').css('-webkit-transform','rotate(0deg)');
+	if('<?php echo $check_mobile;?>'==0){ // หากมีค่าเป็น 0 แปลว่าเป็น PC  จะแสดงผลตาม เครื่อง
+				$('#container_2').css('-webkit-transform','rotate(0deg)');  // กลับตัวอักษร
 				$('#container_2').css('-moz-transform','rotate(0deg)');
 				$('#container_2').css('-o-transform','rotate(0deg)');
 				$('#container_2').css('-ms-transform','rotate(0deg)');
-				$('#container_2').css('transform','rotate(0deg)');
+				$('#container_2').css('transform','rotate(0deg)');  
 			}
 });
-	function range_click(cast){
+	function range_click(cast){ //  เมื่อกด ป่มจาก  ปุ่มเดาการจ่ายเงิน ทั้ง 4 ปุ่ม    เพิ่มค่าใน input
 		$('#cast').val(cast);
 	}
 	function isNumberKeyCast(evt) // funciton สำหรับตรวจสอบว่า เป็นตัวเลข หรือ . ทดศนิยมรึเปล่า
@@ -23,7 +23,7 @@ $( document ).ready(function(){
 			
         return false;
 	}
-	function casher_form(){
+	function casher_form(){ // เมื่อกดจ่ายเงิน
 		var int_cash = parseFloat($('#cast').val());
 		if(int_cash>=parseFloat(<?php echo $receipt['totalprice'];?>)){ // หากจำนวนที่จ่ายน้อยกว่า รายจ่ายสุทธิ ไม่ทำงาน
 			$.ajax({
@@ -77,20 +77,20 @@ $( document ).ready(function(){
 <div class="main col-sm-9 col-md-9 col-lg-10">	
 	<div class='set_center'>
 		<div class="control-group">	
-			<input maxlength="15" value='<?php echo $receipt['recid']; ?>' onkeydown='return false;' class="form-control input-lg" placeholder="เลขที่ใบเสร็จ" id="fileInput" />
+			<input autocomplete="off" maxlength="15" value='<?php echo $receipt['recid']; ?>' onkeydown='return false;' class="form-control input-lg" placeholder="เลขที่ใบเสร็จ" id="fileInput" />
 		</div>	
 		<br/>
 		<form type='post' onsubmit='return casher_form();'>
 			<div class="control-group">
 				<div class="input-group input-group-lg">  
-					<input id='totalprice' value='<?php echo number_format($receipt['totalprice'],2); ?>' onkeydown='return false;' placeholder="เป็นเงิน" type="text" class="form-control">
+					<input autocomplete="off" id='totalprice' value='<?php echo number_format($receipt['totalprice'],2); ?>' onkeydown='return false;' placeholder="เป็นเงิน" type="text" class="form-control">
 					<span class="input-group-addon">บาท</span>
 				</div>		
 			</div>		 
 			<br/>
 			<div class="control-group">
 				<div class="input-group input-group-lg">  
-					<input  id='cast' onkeypress="return isNumberKeyCast(event);" placeholder="รับเงิน" step="0.01" type="number" class="form-control">
+					<input autocomplete="off" id='cast' onkeypress="return isNumberKeyCast(event);" placeholder="รับเงิน" step="0.01" type="number" class="form-control">
 					<span class="input-group-addon">บาท</span>
 				</div>		
 			</div>	

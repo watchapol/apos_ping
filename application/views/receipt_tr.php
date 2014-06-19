@@ -26,6 +26,7 @@
 		<input name='qty[]' style='width:30px;' onchange='javascript:item_change(this);' class='item_qty'  value='1' type='number' onkeypress='return isNumberKey(event);'   >
 	</td>
 	<td   align='center'>
+	<input  name='supid[]' type='hidden' value='<?php echo $supid;?>'>
 		<input  name='price[]' class='item_price' type='hidden' value='<?php echo $price;?>'>
 		<span class='item_total' ><?php echo number_format($price, 2, '.', ''); ?></span> <!-- ราคา -->	
 	</td>

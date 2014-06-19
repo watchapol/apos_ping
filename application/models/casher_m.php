@@ -7,6 +7,9 @@ var $table ='casher';
 	{
 		parent::__construct();
 	}
+	public function pubInsertcasher($data){
+		$this->db->insert('casher',$data);
+	}
 	public function pubGetcasher() 
 	{
 			$querySQL = 'SELECT end_money

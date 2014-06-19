@@ -7,8 +7,10 @@ class casher_c extends CI_Controller {
 		parent::__construct();			
 		$this->load->library('adodb_loader');
 		$this->load->model('casher_m');
+		$this->load->model('receipt_m');
 		$this->load->library('Mobile_Detect'); // ใช้สำหรับตรวจสอบ ว่าเป็นมือถือหรือคอมพิวเตอร์  // application/libraries/Mobile_Detect.php
 		$this->Mobile_Detect = new Mobile_Detect();
+		date_default_timezone_set("Asia/Bangkok");
 	} 
 	
 	
@@ -26,7 +28,7 @@ class casher_c extends CI_Controller {
 		$data['recid']=$_POST['recid'];
 		 $data['receive']=floatval($_POST['receive']);	
 		
-		$data['rec_time']=date('Y-m-d H:M:S');
+		$data['rec_time']=date('Y-m-d H:i:s');
 		$data['commute']= $_POST['receive']-$_POST['totalprice'];
 		$data['receipt']=$_POST['totalprice'];
 		$data['start_money']=$int_start_money;
@@ -37,7 +39,7 @@ class casher_c extends CI_Controller {
 	
 		if (is_int($error)){
 			$this->db->trans_start();
-			$this->db->insert('casher',$data); // insert ข้อมูลการจ่ายเงิน
+			$this->casher_m->pubInsertcasher($data); // insert ข้อมูลการจ่ายเงิน
 			$this->db->trans_complete();
 			if ($this->db->trans_status() === FALSE) 
 			{
@@ -89,13 +91,13 @@ class casher_c extends CI_Controller {
 		if($recid==''){
 			redirect(base_url().'receipt_c');
 		}		
-		$this->load->model('receipt_m');
-		$a_rec =$this->receipt_m->pubGetReceipt($recid);		
+		
+		$a_rec =$this->receipt_m->pubGetReceipt($recid);// ดึงข้อมูล ใบสั่งสินค้า
 		if(count($a_rec)==0){
 			redirect(base_url().'receipt_c');
 		}		
 		$check_mobile=$this->check_mobile(); //ตรวจสอบว่าเป็นมือถือรึเปล่า		
-		$a_rang =$this->priRang($a_rec['totalprice']);		
+		$a_rang =$this->priRang($a_rec['totalprice']);	// คำนวณ ขอบเขตการจ่ายเงิน
 		$this->load->view('head_v',array('str_title'=>'เลขที่ใบเสร็จ')); 	
 		$this->load->view('casher_v',array('check_mobile'=>$check_mobile,'receipt'=>$a_rec,'a_rang'=>$a_rang ));		
 		$this->load->view('foot_v');

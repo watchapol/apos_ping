@@ -58,7 +58,7 @@
 				qty:parseInt(item_count.val())*parseInt(item_qty.val()) // คำนวณ qty ทั้งหมด จาก item_count x item_qty
 			},
 			success:function(j){		
-				if(j<0){						 							
+				if(j<0){ //หากสินค้าไม่พอใ้หเป็นปรับ เป็น 1  							
 					alert('สินค้าจำนวนไม่พอ');	
 					item_count.val('1');
 					item_qty.val('1');							
@@ -99,15 +99,15 @@
 				success:function(j){					
 					 var result = jQuery.parseJSON(j);		
 					switch(result.status) {
-						case 1:
+						case 1:  // สามารถเพิ่มสินค้าได้
 							$('#myTable > tbody:last').append(result.html);
 							update_total();
 							break;
-						case 2:		
+						case 2:	//ใช้ในกรณี ที่ serach สินค้า แล้วกดปุ่ม Add แล้วไม่มีข้อมูลสินค้า  ให้แสดง กลุ่มสินค้าออกมา หรือ receipt_item_search แทน
 							$('#catalog_seach').html(result.html);
 							$('#catalog_seach').slideDown();
 							break;
-						case 3:
+						case 3: // หากมีสินค้า แต่ สินค้าไม่พอสำหรับการ add ข้อมูล
 							alert('สินค้าจำนวนไม่พอ');
 							break;
 						default:							
@@ -243,7 +243,7 @@
 			<div class="control-group">
 				<form name="form_1" style='margin-bottom: 0px;' onsubmit='return customer_key_serach();'>			
 					<div class="input-group input-group-lg">
-						<input maxlength='15' type='number' onkeypress="return isNumberKey(event);" style='padding: 10px 8px;' id='cusid' placeholder="1 : เงินสด" type="text" class="form-control">
+						<input autocomplete="off" maxlength='15' type='number' onkeypress="return isNumberKey(event);" style='padding: 10px 8px;' id='cusid' placeholder="1 : เงินสด" type="text" class="form-control">
 						<span class="input-group-btn">
 							<button onclick='javascript:customer_key_serach();'  style='padding: 10px 14px;' type="button" class="btn btn-default"><span style='padding-top: 3px;padding-bottom: 3px;' class="glyphicon glyphicon-search"></span></button>
 							<button id='dettail_button' onclick='customer_dettail();' style='padding: 10px 8px;' class="btn btn-default" type="button">Detail</button>						
@@ -282,7 +282,7 @@
 			<div class="control-group">
 				<form name="form_2" style='margin-bottom: 0px;' onsubmit="return item_add($('#itemid').val());">				
 				   <div class="input-group input-group-lg" style=''>			    
-						<input maxlength='15' id='itemid'  onkeypress="return isNumberKey(event);"  style='padding: 10px 8px;' placeholder="Barcode" type='number' class="form-control">				
+						<input autocomplete="off" maxlength='15' id='itemid'  onkeypress="return isNumberKey(event);"  style='padding: 10px 8px;' placeholder="Barcode" type='number' class="form-control">				
 						<div class="input-group-btn">						
 							<button onclick="javascript:item_search();" style='padding: 10px 14px;' type="button" class="btn btn-default"><span style='padding-top: 3px;padding-bottom: 3px;' class="glyphicon glyphicon-search"></span></button>
 							<button onclick="javascript:item_add($('#itemid').val());" style='padding: 10px 8px;' type="button" class="btn btn-default">Add</button>            
@@ -297,8 +297,7 @@
 				<input type='hidden' id='orderid' name='orderid' value='1'>
 				<input type='hidden' id='pay_date' name='pay_date' value='2014-06-05'>
 				<input type='hidden' id='trans_date' name='trans_date' value='2014-06-05'>
-				<input type='hidden' id='commentr' name='commentr' value=''>
-				<input type='hidden' id='supid' name='supid' value='1'>
+				<input type='hidden' id='commentr' name='commentr' value=''>				
 				<input type='hidden' id='cusid_input' name='cusid_input' value='<?php echo $customer_id_default;?>'>
 				<table id='myTable' class="table table-bordered table-hover">
 					<thead>
